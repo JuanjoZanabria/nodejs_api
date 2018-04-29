@@ -17,8 +17,14 @@ passport.use(
     callbackURL: '/auth/google/redirect',
     clientID: '720993327430-emfmqq94uksa9s6r45h69n2muj7n3np3.apps.googleusercontent.com',
     clientSecret: 'MuZC4ntbHXVGQfuU0jvPI2Er'
-  }, () => {
+  }, (accessToken, refreshToken, profile, done) => {
     //passport callback function
+    console.log('passportCallback function fired');
+    console.log('---Nombre: ' + profile.displayName);
+    console.log('---ID Google: ' + profile.id);
+    //console.log('---Correo: ' + profile.emails[0].value);
+    console.log(profile);
+    done(null, false);
   })
 )
 /*
@@ -27,6 +33,15 @@ Lanzar el servidor en el puerto 3003
 server.listen(3003, function() {
   console.log("Server is up and listening on 3003...");
 })
+
+server.get("/auth/google", passport.authenticate('google', {
+  scope: ['email', 'profile']
+}));
+
+server.get("/auth/google/redirect", passport.authenticate('google', {
+  successRedirect: '/image',
+  failureRedirect: '/image'
+}));
 /*
 desc: Asignar token al usuario
 queryParams: N/A
