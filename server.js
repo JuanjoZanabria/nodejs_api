@@ -5,11 +5,14 @@ const express = require('express');
 const googleClient = require('./googleClient');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20');
+const bodyParser = require('body-parser');
 /*
 Atributos
 */
 const server = express();
 const instanceGoogleClient = new googleClient();
+
+
 
 passport.use(
   new GoogleStrategy({
@@ -33,26 +36,33 @@ Lanzar el servidor en el puerto 3003
 server.listen(3003, function() {
   console.log("Server is up and listening on 3003...");
 })
+server.use(bodyParser.json()); // support json encoded bodies
 
-server.get("/auth/google", passport.authenticate('google', {
-  scope: ['email', 'profile']
-}));
-
-server.get("/auth/google/redirect", passport.authenticate('google', {
-  successRedirect: '/image',
-  failureRedirect: '/image'
-}));
 /*
 desc: Asignar token al usuario
 queryParams: N/A
-req: credenciales (correo)
-res: token
+req: credenciales (correo, nombre completo, foto)
+res: id del usuario
 */
+
 server.post("/auth", function(req, res) {
-  console.log("Responding to root route");
-  instanceGoogleClient.print("Task 1: Validate Google Account --- Successful");
-  res.send("Respuesta");
-})
+  var idUsuario = Number.MIN_SAFE_INTEGER;
+  var fullName = req.body.fullName;
+  var email = req.body.email; //? req.Email : lanzarErrorCampoVacio("email");
+  var profilePicture = req.body.profilePicture;
+  console.log("Responding to req of auth");
+  //conexion a base de datos
+  //consulta que inserte el usuario y devuelva en idUsuario el id:
+  //insert(fullName, email, profilePicture) values (fullName,email,profilePicture)
+  //addParameters () comprobar nulos
+  //Ejecutar
+  //idUsuario = resultado de la consulta.
+  idUsuario = 10;
+  instanceGoogleClient.print("Task 1: Insert in BBDD the user --- Successful");
+  console.log(req.body);
+  var idUsuarioJSON = "{ IdUsuario: "+idUsuario+" }";
+  res.send(idUsuarioJSON);
+});
 /*
 desc: Identifica fotografia y devuelve toda la informacion
 queryParams: N/A
