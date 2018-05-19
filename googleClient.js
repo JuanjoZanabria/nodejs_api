@@ -4,53 +4,44 @@ const credentials = {
 };
 const client = new vision.ImageAnnotatorClient(credentials);
 
-class googleClient {
-
-  constructor() {}
-
-  setRequestFeature(featureType) {
-    const feature = formatFeature(featureType)
-    const request = {
-      image: {
-        source: {
-          imageUri: 'gs://gapbbdd/IMG_6577_ok.jpg'
-        }
+//'gs://gapbbdd/IMG_6577_ok.jpg'
+function setRequest(imageUri) {
+  let request = {
+    image: {
+      source: {
+        imageUri: imageUri
+      }
+    },
+    features: [{
+        type: "WEB_DETECTION"
       },
-      features: [{
-          type: "WEB_DETECTION"
-        },
-        {
-          type: "LABEL_DETECTION"
-        },
-        {
-          type: "SAFE_SEARCH_DETECTION"
-        },
-        {
-          type: "LOGO_DETECTION"
-        },
-        {
-          type: "IMAGE_PROPERTIES"
-        }
-      ],
-    }
+      {
+        type: "LABEL_DETECTION"
+      },
+      {
+        type: "SAFE_SEARCH_DETECTION"
+      },
+      {
+        type: "LOGO_DETECTION"
+      },
+      {
+        type: "IMAGE_PROPERTIES"
+      }
+    ],
   }
-  getImageAnnotated(request) {
-    client
-      .annotateImage(request)
-      .then(results => {
-        console.log(JSON.stringify(results));
-      })
-      .catch(err => {
-        console.error('ERROR:', err);
-      });
-  }
-  formatFeature(formatFeature) {
-    return JSON.stringify(formatFeature)
-  }
-
-  print(str) {
-    console.log(str);
-  }
+  return JSON.stringify(request);
 }
 
-module.exports = googleClient;
+function getImageAnnotated(request) {
+  let googlePromise = client
+    .annotateImage(JSON.parse(request));
+    return googlePromise;
+}
+
+function print(str) {
+  console.log(str);
+}
+
+module.exports.setRequest = setRequest;
+module.exports.getImageAnnotated = getImageAnnotated;
+module.exports.print = print;

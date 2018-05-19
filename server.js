@@ -6,13 +6,11 @@ const googleClient = require('./googleClient');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20');
 const bodyParser = require('body-parser');
+const serviceLogic = require('./serverLogic');
 /*
 Atributos
 */
 const server = express();
-const instanceGoogleClient = new googleClient();
-
-
 
 passport.use(
   new GoogleStrategy({
@@ -46,22 +44,21 @@ res: id del usuario
 */
 
 server.post("/auth", function(req, res) {
-  var idUsuario = Number.MIN_SAFE_INTEGER;
-  var fullName = req.body.fullName;
-  var email = req.body.email; //? req.Email : lanzarErrorCampoVacio("email");
-  var profilePicture = req.body.profilePicture;
-  console.log("Responding to req of auth");
+  let idUsuario = Number.MIN_SAFE_INTEGER;
+  let fullName = req.body.fullName;
+  let email = req.body.email; //? req.Email : lanzarErrorCampoVacio("email"); Validar JSON de entrada
+  let profilePicture = req.body.profilePicture;
+  console.log("Responding to auth route");
   //conexion a base de datos
   //consulta que inserte el usuario y devuelva en idUsuario el id:
   //insert(fullName, email, profilePicture) values (fullName,email,profilePicture)
   //addParameters () comprobar nulos
   //Ejecutar
   //idUsuario = resultado de la consulta.
-  idUsuario = 10;
-  instanceGoogleClient.print("Task 1: Insert in BBDD the user --- Successful");
   console.log(req.body);
-  var idUsuarioJSON = "{ IdUsuario: "+idUsuario+" }";
+  let idUsuarioJSON = "{ IdUsuario: " + serviceLogic.getUserId() + " }";
   res.send(idUsuarioJSON);
+  instanceGoogleClient.print("Task 1: Insert in BBDD the user --- Successful");
 });
 /*
 desc: Identifica fotografia y devuelve toda la informacion
@@ -70,10 +67,19 @@ req: token, imageUri
 res: resultado
 */
 server.post("/image", function(req, res) {
-  console.log("Responding to root route");
-  instanceGoogleClient.print("Task 2: Create GoogleClient --- Successful");
-  res.send("Respuesta");
+  console.log("Responding to image route");
+  let imagenUri = req.body.imageUri;
+  console.log("Uri de la imagen: " + imagenUri);
+  let formattedRequest = googleClient.setRequest(imagenUri);
+  let promise = googleClient.getImageAnnotated(formattedRequest);
+  promise.then(formattedResponse => {
+      res.send(formattedResponse);
+      console.log(formattedResponse[0].labelAnnotations[0].description)
+    })
+    .catch(err => console.log(err.message));
+  googleClient.print("Task 2: Create GoogleClient --- Successful");
 })
+
 /*
 desc: Permite filtrar una imagen por idSolicitud
 queryParams: idSolicitud
@@ -82,7 +88,7 @@ res: resultado
 */
 server.get("/image", function(req, res) {
   console.log("Responding to root route");
-  instanceGoogleClient.print("Task 3: Create GoogleClient --- Successful");
+  googleClient.print("Task 3: Create GoogleClient --- Successful");
   res.send("Respuesta");
 })
 /*
@@ -93,7 +99,7 @@ res: resultado
 */
 server.get("/recentSearchs", function(req, res) {
   console.log("Responding to root route");
-  instanceGoogleClient.print("Task 4: Create GoogleClient --- Successful");
+  googleClient.print("Task 4: Create GoogleClient --- Successful");
   res.send("Respuesta");
 })
 /*
@@ -104,7 +110,7 @@ res: resultado
 */
 server.get("/popularSearchs", function(req, res) {
   console.log("Responding to root route");
-  instanceGoogleClient.print("Task 5: Create GoogleClient --- Successful");
+  googleClient.print("Task 5: Create GoogleClient --- Successful");
   res.send("Respuesta");
 })
 /*
@@ -115,6 +121,6 @@ res: resultado
 */
 server.get("/favoriteSearchs", function(req, res) {
   console.log("Responding to root route");
-  instanceGoogleClient.print("Task 6: Create GoogleClient --- Successful");
+  googleClient.print("Task 6: Create GoogleClient --- Successful");
   res.send("Respuesta");
 })
