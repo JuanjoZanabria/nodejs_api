@@ -77,7 +77,7 @@ server.post("/image", function(req, res) {
       console.log(formattedResponse[0].labelAnnotations[0].description)
     })
     .catch(err => console.log(err.message));
-  googleClient.print("Task 2: Create GoogleClient --- Successful");
+  googleClient.print("Task 2: Getting Image from GoogleVision  --- Successful");
 })
 
 /*
