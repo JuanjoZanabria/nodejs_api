@@ -38,10 +38,5 @@ function getImageAnnotated(request) {
     return googlePromise;
 }
 
-function print(str) {
-  console.log(str);
-}
-
 module.exports.setRequest = setRequest;
 module.exports.getImageAnnotated = getImageAnnotated;
-module.exports.print = print;

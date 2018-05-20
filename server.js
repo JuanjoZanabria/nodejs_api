@@ -46,7 +46,7 @@ res: id del usuario
 */
 
 server.post("/auth", function(req, res) {
-  let response = serviceValidate.validateUser(req) ? serviceLogic.getUser(req.body) : templates.messages.uri.auth.incorrectRequestBody;
+  let response = serviceValidate.validateUser(req.body) ? serviceLogic.getUser(req.body) : templates.messages.uri.auth.incorrectRequestBody;
   console.log(templates.messages.uri.auth.called);
   //conexion a base de datos
   //consulta que inserte el usuario y devuelva en idUsuario el id:
@@ -55,8 +55,8 @@ server.post("/auth", function(req, res) {
   //Ejecutar
   //idUsuario = resultado de la consulta.
   console.log(response);
-  res.send(response);
-  googleClient.print("Task 1: Insert in BBDD the user --- Successful");
+  res.status(response.status).send(response.text);
+  console.log(templates.messages.uri.auth.task1);
 });
 /*
 desc: Identifica fotografia y devuelve toda la informacion
@@ -75,7 +75,7 @@ server.post("/image", function(req, res) {
       console.log(formattedResponse[0].labelAnnotations[0].description)
     })
     .catch(err => console.log(err.message));
-  googleClient.print("Task 2: Getting Image from GoogleVision  --- Successful");
+  console.log("Task 2: Getting Image from GoogleVision  --- Successful");
 })
 
 /*
@@ -86,7 +86,7 @@ res: resultado
 */
 server.get("/image", function(req, res) {
   console.log("Responding to root route");
-  googleClient.print("Task 3: Create GoogleClient --- Successful");
+  console.log("Task 3: Create GoogleClient --- Successful");
   res.send("Respuesta");
 })
 /*
@@ -97,7 +97,7 @@ res: resultado
 */
 server.get("/recentSearchs", function(req, res) {
   console.log("Responding to root route");
-  googleClient.print("Task 4: Create GoogleClient --- Successful");
+  console.log("Task 4: Create GoogleClient --- Successful");
   res.send("Respuesta");
 })
 /*
@@ -108,7 +108,7 @@ res: resultado
 */
 server.get("/popularSearchs", function(req, res) {
   console.log("Responding to root route");
-  googleClient.print("Task 5: Create GoogleClient --- Successful");
+  console.log("Task 5: Create GoogleClient --- Successful");
   res.send("Respuesta");
 })
 /*
@@ -119,6 +119,6 @@ res: resultado
 */
 server.get("/favoriteSearchs", function(req, res) {
   console.log("Responding to root route");
-  googleClient.print("Task 6: Create GoogleClient --- Successful");
+  console.log("Task 6: Create GoogleClient --- Successful");
   res.send("Respuesta");
 })

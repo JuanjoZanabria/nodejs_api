@@ -8,7 +8,7 @@ var userTemplate = {
 //Public Methods
 function getUser(user) {
   userTemplate = user;
-  let userId = isUserSignedUpAlready() ? addUser() : getUserId();
+  let userId = isUserSignedUpAlready() ? getUserId() : addUser();
   return formatUser(userId);
 }
 
