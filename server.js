@@ -9,6 +9,7 @@ const bodyParser = require('body-parser');
 const serviceLogic = require('./serverLogic');
 const serviceValidate = require('./serverValidation');
 const templates = require('./messagesTemplates.json');
+const https = require('https');
 /*
 Atributos
 */
@@ -65,7 +66,7 @@ server.post("/auth", function(req, res) {
 desc: Identifica fotografia y devuelve toda la informacion
 queryParams: N/A
 req: token, imageUri
-res: resultado
+res: resultado, idImagen en BBDD
 */
 server.post("/image", function(req, res) {
   console.log(templates.messages.uri.image.called);
@@ -74,6 +75,22 @@ server.post("/image", function(req, res) {
   let formattedRequest = googleClient.setRequest(imagenUri);
   let promise = googleClient.getImageAnnotated(formattedRequest);
   promise.then(formattedResponse => {
+      let q = formattedResponse[0].webDetection.webEntities[0].description;
+      let apikey = "AIzaSyANKZcPxLG3EPNCSdB8M-9jH9S_PljSoU4";
+      let cx = "014899129568475050489:mzgfwcuvxte";
+      https.get('https://www.googleapis.com/customsearch/v1?key=AIzaSyANKZcPxLG3EPNCSdB8M-9jH9S_PljSoU4&cx=014899129568475050489:mzgfwcuvxte=&q=camiseta', (resp) => { 
+        let data = '';
+          // A chunk of data has been recieved.
+        resp.on('data', (chunk) => {  
+          data += chunk; 
+        });
+          // The whole response has been received. Print out the result.
+        resp.on('end', () => {  
+          console.log(JSON.parse(data).explanation); 
+        });
+      }).on("error", (err) => { 
+        console.log("Error: " + err.message);
+      });
       res.send(formattedResponse);
       console.log(formattedResponse[0].labelAnnotations[0].description)
     })
@@ -83,14 +100,20 @@ server.post("/image", function(req, res) {
 
 /*
 desc: Permite filtrar una imagen por idSolicitud
-queryParams: idSolicitud
+pathParams: idSolicitud
 req: N/A
 res: resultado
 */
-server.get("/image", function(req, res) {
+server.get("/image/:idImage", function(req, res) {
+  let filters = getFilters(req);
+  let idImage = req.params.idImage;
+  let originalImage = serviceLogic.getImageFromDB(idImage);
+  let filteredImage = serviceLogic.applyFilters(originalImage, filters);
   console.log("Responding to root route");
+  console.log(filters);
+  console.log(idImage);
   console.log("Task 3: Create GoogleClient --- Successful");
-  res.send("Respuesta");
+  res.send(filteredImage);
 })
 /*
 desc: Permite ver y filtrar las busquedas recientes por lotes
@@ -100,6 +123,17 @@ res: resultado
 */
 server.get("/recentSearchs", function(req, res) {
   console.log("Responding to root route");
+  https.get('https://www.googleapis.com/customsearch/v1?key=AIzaSyANKZcPxLG3EPNCSdB8M-9jH9S_PljSoU4&cx=014899129568475050489:mzgfwcuvxte&q=t-shirt', (res) => { 
+    console.log('statusCode:', res.statusCode);
+    console.log('headers:', res.headers);
+
+    res.on('data', (d) => {
+      process.stdout.write(d);
+    });
+
+  }).on('error', (e) => {
+    console.error(e);
+  });
   console.log("Task 4: Create GoogleClient --- Successful");
   res.send("Respuesta");
 })
