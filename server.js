@@ -46,7 +46,7 @@ res: id del usuario
 */
 
 server.post("/auth", function(req, res) {
-  let user = serviceValidate.validateUser(req) ? serviceLogic.getUser(req.body) : "Body incorrecto";
+  let response = serviceValidate.validateUser(req) ? serviceLogic.getUser(req.body) : templates.messages.uri.auth.incorrectRequestBody;
   console.log(templates.messages.uri.auth.called);
   //conexion a base de datos
   //consulta que inserte el usuario y devuelva en idUsuario el id:
@@ -54,8 +54,8 @@ server.post("/auth", function(req, res) {
   //addParameters () comprobar nulos
   //Ejecutar
   //idUsuario = resultado de la consulta.
-  console.log(user);
-  res.send(user);
+  console.log(response);
+  res.send(response);
   googleClient.print("Task 1: Insert in BBDD the user --- Successful");
 });
 /*
