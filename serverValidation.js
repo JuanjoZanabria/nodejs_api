@@ -1,5 +1,7 @@
 function validateUser(requestBody) {
-  return requestBody.hasOwnProperty("fullName") &&
+  let keys = Object.keys(requestBody);
+  return keys.length = 3 &&
+    requestBody.hasOwnProperty("fullName") &&
     requestBody.hasOwnProperty("email") &&
     requestBody.hasOwnProperty("profilePicture") ?
     !isAnyKeyEmpty(requestBody) :
@@ -9,11 +11,14 @@ function validateUser(requestBody) {
 function isAnyKeyEmpty(requestBody) {
   let isEmpty = true;
   console.log(requestBody);
-  var keys = Object.keys(requestBody);
-  for (var key = 0; key < keys.length; key++) {
-    isEmpty = requestBody[key] == "" ? true : false;
+  for (var key = 0; key < 3; key++) {
+    isEmpty = isStringEmpty(requestBody[key]) ? true : false;
   }
   return isEmpty;
+}
+
+function isStringEmpty(value){
+  return value == "";
 }
 
 module.exports.validateUser = validateUser;

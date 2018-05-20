@@ -55,7 +55,10 @@ server.post("/auth", function(req, res) {
   //Ejecutar
   //idUsuario = resultado de la consulta.
   console.log(response);
-  res.status(response.status).send(response.text);
+  if (response.hasOwnProperty("status"))
+    res.status(response.status).send(response.text);
+  else
+    res.send(response);
   console.log(templates.messages.uri.auth.task1);
 });
 /*
