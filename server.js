@@ -7,6 +7,8 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20');
 const bodyParser = require('body-parser');
 const serviceLogic = require('./serverLogic');
+const serviceValidate = require('./serverValidation');
+const templates = require('./messagesTemplates.json');
 /*
 Atributos
 */
@@ -44,21 +46,17 @@ res: id del usuario
 */
 
 server.post("/auth", function(req, res) {
-  let idUsuario = Number.MIN_SAFE_INTEGER;
-  let fullName = req.body.fullName;
-  let email = req.body.email; //? req.Email : lanzarErrorCampoVacio("email"); Validar JSON de entrada
-  let profilePicture = req.body.profilePicture;
-  console.log("Responding to auth route");
+  let user = serviceValidate.validateUser(req) ? serviceLogic.getUser(req.body) : "Body incorrecto";
+  console.log(templates.messages.auth.called);
   //conexion a base de datos
   //consulta que inserte el usuario y devuelva en idUsuario el id:
   //insert(fullName, email, profilePicture) values (fullName,email,profilePicture)
   //addParameters () comprobar nulos
   //Ejecutar
   //idUsuario = resultado de la consulta.
-  console.log(req.body);
-  let idUsuarioJSON = "{ IdUsuario: " + serviceLogic.getUserId() + " }";
-  res.send(idUsuarioJSON);
-  instanceGoogleClient.print("Task 1: Insert in BBDD the user --- Successful");
+  console.log(user);
+  res.send(user);
+  googleClient.print("Task 1: Insert in BBDD the user --- Successful");
 });
 /*
 desc: Identifica fotografia y devuelve toda la informacion
@@ -67,7 +65,7 @@ req: token, imageUri
 res: resultado
 */
 server.post("/image", function(req, res) {
-  console.log("Responding to image route");
+  console.log(templates.messages.image.called);
   let imagenUri = req.body.imageUri;
   console.log("Uri de la imagen: " + imagenUri);
   let formattedRequest = googleClient.setRequest(imagenUri);

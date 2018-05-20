@@ -1,23 +1,35 @@
-  //Public Methods
-  function getUserId(fullName, email, profilePicture) {
-    let userId = checkUserByEmail(email);
+/*
+Atributos
+*/
+var userTemplate = {
+  fullName:"", email:"", profilePicture:""
+};
 
-    if (userId < 0) {
-      return addUser(fullName, email, profilePicture);
-    } else {
-      return userId;
-    }
+//Public Methods
+function getUser(user) {
+  userTemplate = user;
+  let userId = isUserSignedUpAlready() ? addUser() : getUserId();
+  return formatUser(userId);
+}
+
+// Private Methods
+function isUserSignedUpAlready() {
+  return false;
+}
+
+function addUser() {
+  return 1;
+}
+
+function getUserId() {
+  return 1;
+}
+
+function formatUser(userId) {
+  let formattedUserIdResponse = {
+    UserId: userId
   }
+  return formattedUserIdResponse;
+}
 
-  // Private Methods
-
-  function checkUserByEmail(email){
-    return -1;
-  }
-
-  function addUser(fullName, email, profilePicture){
-    let idUsuario = 1;
-    return idUsuario;
-  }
-  
-module.exports.getUserId = getUserId;
+module.exports.getUser = getUser;
