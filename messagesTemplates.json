@@ -1,12 +1,14 @@
 {
   "messages": {
-    "auth": {
-      "incorrectRequestBody": "Parametro body en la llamada a la uri /auth es incorrecta o incompleta.",
-      "called": "Responding to auth route"
-    },
-    "image":{
-      "incorrectRequestBody": "Parametro body en la llamada a la uri /image es incorrecta o incompleta.",
-      "called": "Responding to image route"
+    "uri": {
+      "auth": {
+        "incorrectRequestBody": "Parametro body en la llamada a la uri /auth es incorrecta o incompleta.",
+        "called": "Responding to auth route"
+      },
+      "image": {
+        "incorrectRequestBody": "Parametro body en la llamada a la uri /image es incorrecta o incompleta.",
+        "called": "Responding to image route"
+      }
     }
   }
 }

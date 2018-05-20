@@ -47,7 +47,7 @@ res: id del usuario
 
 server.post("/auth", function(req, res) {
   let user = serviceValidate.validateUser(req) ? serviceLogic.getUser(req.body) : "Body incorrecto";
-  console.log(templates.messages.auth.called);
+  console.log(templates.messages.uri.auth.called);
   //conexion a base de datos
   //consulta que inserte el usuario y devuelva en idUsuario el id:
   //insert(fullName, email, profilePicture) values (fullName,email,profilePicture)
@@ -65,7 +65,7 @@ req: token, imageUri
 res: resultado
 */
 server.post("/image", function(req, res) {
-  console.log(templates.messages.image.called);
+  console.log(templates.messages.uri.image.called);
   let imagenUri = req.body.imageUri;
   console.log("Uri de la imagen: " + imagenUri);
   let formattedRequest = googleClient.setRequest(imagenUri);
