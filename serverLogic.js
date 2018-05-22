@@ -1,3 +1,5 @@
+const labels = require('./labelsTemplates.json');
+
 /*
 Atributos
 */
@@ -6,6 +8,8 @@ var userTemplate = {
   email: "",
   profilePicture: ""
 };
+
+var imageAnnotatedTemplate = {};
 
 //Public Methods
 function getUser(user) {
@@ -49,6 +53,12 @@ function getFilters(req) {
   return filters;
 }
 
+function transformImageAnnotated(imageAnnotated) {
+  imageAnnotatedTemplate = imageAnnotated;
+  let imageTransformed = isCustomImg() ? makeTemplateForCustomImg() : makeTemplateForWebImg();
+  return imageTransformed;
+}
+
 // Private Methods
 function isUserSignedUpAlready() {
   return false;
@@ -69,7 +79,35 @@ function formatUser(userId) {
   return formattedUserIdResponse;
 }
 
+function isCustomImg() {
+  return areWebLabelsEmpty(imageAnnotatedTemplate);
+}
+
+function areWebLabelsEmpty(imageAnnotatedTemplate) {
+  //console.log("AreWebLabels: " + imageAnnotatedTemplate[0].webDetection.fullMatchingImages[0].url);
+  //console.log("AreWebLabels: " + imageAnnotatedTemplate[0].labels.webLabels.fullMatchingImages);
+  let areEmpty = isStringEmpty(imageAnnotatedTemplate[0].webDetection.fullMatchingImages[0].url) &&
+    isStringEmpty(imageAnnotatedTemplate[0].webDetection.pagesWithMatchingImages[0].url) ? true : false;
+  return areEmpty;
+}
+
+function isStringEmpty(value) {
+  return value == "";
+}
+
+//ambas funciones tiene que juntar etiquetas del searchengine junto con el api GoogleVision
+//y montar un json nuevo transformado para devolver al postman. Las etiquetas que valen para cada caso estan
+//filterByPercentage
+function makeTemplateForWebImg() {
+  return {Hey : "hola"};
+}
+
+function makeTemplateForCustomImg() {
+
+}
+
 module.exports.getUser = getUser;
 module.exports.getImageFromDB = getImageFromDB;
 module.exports.applyFilters = applyFilters;
 module.exports.getFilters = getFilters;
+module.exports.transformImageAnnotated = transformImageAnnotated;

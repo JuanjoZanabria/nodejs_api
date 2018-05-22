@@ -1,0 +1,6 @@
+{
+  "webLabels": {
+    "fullMatchingImages": "webDetection.fullMatchingImages[0].url",
+    "pagesWithMatchingImages": "webDetection.pagesWithMatchingImages.url"
+  }
+}

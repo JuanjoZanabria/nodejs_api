@@ -1,18 +1,18 @@
 function validateUser(requestBody) {
-  let keys = Object.keys(requestBody);
-  return keys.length = 3 &&
+  let labels = Object.keys(requestBody);
+  return labels.length = 3 &&
     requestBody.hasOwnProperty("fullName") &&
     requestBody.hasOwnProperty("email") &&
     requestBody.hasOwnProperty("profilePicture") ?
-    !isAnyKeyEmpty(requestBody) :
+    !isAnyLabelEmpty(requestBody) :
     false;
 }
 
-function isAnyKeyEmpty(requestBody) {
+function isAnyLabelEmpty(requestBody) {
   let isEmpty = true;
   console.log(requestBody);
-  for (var key = 0; key < 3; key++) {
-    isEmpty = isStringEmpty(requestBody[key]) ? true : false;
+  for (var label = 0; label < 3; label++) {
+    isEmpty = isStringEmpty(requestBody[label]) ? true : false;
   }
   return isEmpty;
 }

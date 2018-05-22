@@ -74,25 +74,11 @@ server.post("/image", function(req, res) {
   console.log("Uri de la imagen: " + imagenUri);
   let formattedRequest = googleClient.setRequest(imagenUri);
   let promise = googleClient.getImageAnnotated(formattedRequest);
-  promise.then(formattedResponse => {
-      let q = formattedResponse[0].webDetection.webEntities[0].description;
-      let apikey = "AIzaSyANKZcPxLG3EPNCSdB8M-9jH9S_PljSoU4";
-      let cx = "014899129568475050489:mzgfwcuvxte";
-      https.get('https://www.googleapis.com/customsearch/v1?key=AIzaSyANKZcPxLG3EPNCSdB8M-9jH9S_PljSoU4&cx=014899129568475050489:mzgfwcuvxte=&q=camiseta', (resp) => { 
-        let data = '';
-          // A chunk of data has been recieved.
-        resp.on('data', (chunk) => {  
-          data += chunk; 
-        });
-          // The whole response has been received. Print out the result.
-        resp.on('end', () => {  
-          console.log(JSON.parse(data).explanation); 
-        });
-      }).on("error", (err) => { 
-        console.log("Error: " + err.message);
-      });
-      res.send(formattedResponse);
-      console.log(formattedResponse[0].labelAnnotations[0].description)
+  promise.then(imageAnnotated => {
+      let q = imageAnnotated[0].webDetection.webEntities[0].description;
+      let imgTransformed = serviceLogic.transformImageAnnotated(imageAnnotated);
+      res.send(imgTransformed);
+      console.log(imageAnnotated[0].labelAnnotations[0].description)
     })
     .catch(err => console.log(err.message));
   console.log("Task 2: Getting Image from GoogleVision  --- Successful");
@@ -123,7 +109,15 @@ res: resultado
 */
 server.get("/recentSearchs", function(req, res) {
   console.log("Responding to root route");
-  https.get('https://www.googleapis.com/customsearch/v1?key=AIzaSyANKZcPxLG3EPNCSdB8M-9jH9S_PljSoU4&cx=014899129568475050489:mzgfwcuvxte&q=t-shirt', (res) => { 
+
+  var apiKeySearchEngine = "key=AIzaSyANKZcPxLG3EPNCSdB8M-9jH9S_PljSoU4";
+  var customSearchEngine = "cx=014899129568475050489:mzgfwcuvxte";
+  var quotesSearchEngine = "q=t-shirt";
+  var uriSearchEngine = "https://www.googleapis.com/customsearch/v1" +
+  "?" + apiKeySearchEngine +
+  "&" + customSearchEngine +
+  "&" + quotesSearchEngine;
+  https.get(uriSearchEngine, (res) => { 
     console.log('statusCode:', res.statusCode);
     console.log('headers:', res.headers);
 
