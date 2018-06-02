@@ -1,4 +1,5 @@
 const labels = require('./labelsTemplates.json');
+const searchEngineClient = require('./searchEngineClient');
 
 /*
 Atributos
@@ -10,9 +11,19 @@ var userTemplate = {
 };
 
 var imageAnnotatedTemplate = {};
+var finalImageLabelsTemplate = {};
+var imgTransformed = {};
 
 //Public Methods
-function getUser(user) {
+function setImageAnnotated(imageAnnotated) {
+  imageAnnotatedTemplate = imageAnnotated;
+}
+
+function setFinalImageLabeled(finalImageLabeled) {
+  finalImageLabelsTemplate = finalImageLabeled;
+}
+
+function requestUser(user) {
   userTemplate = user;
   let userId = isUserSignedUpAlready() ? getUserId() : addUser();
   return formatUser(userId);
@@ -31,17 +42,7 @@ function applyFilters(originalImage, filters) {
 }
 
 function filterByPercentage(originalImage, desirePercentage) {
-  //webDetection.webEntities.description con el score
-  //webDetection.BestGuessLabels
-  //webDetection.fullMatchingImages.url y recortar / enlace tienda
-  //webDetection.pagesWithMatchingImages.url y el fullMatchingImages.url
-  //logoAnnotations.description
 
-  //webDetection.webEntities.description con el score
-  //webDetection.BestGuessLabels
-  //logoAnnotations.description
-  //https://www.googleapis.com/customsearch/v1?key=AIzaSyANKZcPxLG3EPNCSdB8M-9jH9S_PljSoU4&cx=014899129568475050489:mzgfwcuvxte&q=t-shirt adidas logo cavaliers
-  //key=AIzaSyANKZcPxLG3EPNCSdB8M-9jH9S_PljSoU4
 }
 
 function getFilters(req) {
@@ -53,10 +54,25 @@ function getFilters(req) {
   return filters;
 }
 
-function transformImageAnnotated(imageAnnotated) {
-  imageAnnotatedTemplate = imageAnnotated;
-  let imageTransformed = isCustomImg() ? makeTemplateForCustomImg() : makeTemplateForWebImg();
-  return imageTransformed;
+function transformImageLabeled() {
+  if (isCustomImg()) {
+    makeTemplateForCustomImg()
+  } else {
+    makeTemplateForWebImg();
+  }
+  return imgTransformed;
+}
+
+function getSearchEngineLabels() {
+  let quoteLogo = imageAnnotatedTemplate[0].logoAnnotations.description;
+  let quoteWebEntity = imageAnnotatedTemplate[0].webDetection.webEntities[0].description;
+  let promise;
+  if (!isStringEmpty(quoteLogo)) {
+    promise = searchEngineClient.callSearchEngine(quoteWebEntity);
+  } else {
+    promise = searchEngineClient.callSearchEngine(quoteLogo);
+  }
+  return promise;
 }
 
 // Private Methods
@@ -95,19 +111,34 @@ function isStringEmpty(value) {
   return value == "";
 }
 
+
+
+//console.log(imageAnnotatedTemplate);
 //ambas funciones tiene que juntar etiquetas del searchengine junto con el api GoogleVision
 //y montar un json nuevo transformado para devolver al postman. Las etiquetas que valen para cada caso estan
-//filterByPercentage
+//webDetection.webEntities.description con el score
+//webDetection.BestGuessLabels
+//webDetection.fullMatchingImages.url y recortar / enlace tienda
+//webDetection.pagesWithMatchingImages.url y el fullMatchingImages.url
+//logoAnnotations.description
+
+//webDetection.webEntities.description con el score
+//webDetection.BestGuessLabels
+//logoAnnotations.description
+//https://www.googleapis.com/customsearch/v1?key=AIzaSyANKZcPxLG3EPNCSdB8M-9jH9S_PljSoU4&cx=014899129568475050489:mzgfwcuvxte&q=t-shirt adidas logo cavaliers
+//key=AIzaSyANKZcPxLG3EPNCSdB8M-9jH9S_PljSoU4
 function makeTemplateForWebImg() {
-  return {Hey : "hola"};
+  imgTransformed = finalImageLabelsTemplate;
 }
 
 function makeTemplateForCustomImg() {
-
+  imgTransformed = finalImageLabelsTemplate;
 }
 
-module.exports.getUser = getUser;
+module.exports.requestUser = requestUser;
 module.exports.getImageFromDB = getImageFromDB;
 module.exports.applyFilters = applyFilters;
 module.exports.getFilters = getFilters;
-module.exports.transformImageAnnotated = transformImageAnnotated;
+module.exports.transformImageLabeled = transformImageLabeled;
+module.exports.setImageAnnotated = setImageAnnotated;
+module.exports.setFinalImageLabeled = setFinalImageLabeled;

@@ -1,6 +1,7 @@
 /*
 Requires
 */
+const https = require('https');
 const express = require('express');
 const googleClient = require('./googleClient');
 const passport = require('passport');
@@ -9,7 +10,7 @@ const bodyParser = require('body-parser');
 const serviceLogic = require('./serverLogic');
 const serviceValidate = require('./serverValidation');
 const templates = require('./messagesTemplates.json');
-const https = require('https');
+const mergeJSON = require('merge-json');
 /*
 Atributos
 */
@@ -47,7 +48,13 @@ res: id del usuario
 */
 
 server.post("/auth", function(req, res) {
-  let response = serviceValidate.validateUser(req.body) ? serviceLogic.getUser(req.body) : templates.messages.uri.auth.incorrectRequestBody;
+  if (serviceValidate.validateUser(req.body)) {
+    let response = serviceLogic.requestUser(req.body);
+    res.send(response);
+  } else {
+    let response = templates.messages.uri.auth.incorrectRequestBody;
+    res.status(response.status).send(response.text);
+  }
   console.log(templates.messages.uri.auth.called);
   //conexion a base de datos
   //consulta que inserte el usuario y devuelva en idUsuario el id:
@@ -56,10 +63,6 @@ server.post("/auth", function(req, res) {
   //Ejecutar
   //idUsuario = resultado de la consulta.
   console.log(response);
-  if (response.hasOwnProperty("status"))
-    res.status(response.status).send(response.text);
-  else
-    res.send(response);
   console.log(templates.messages.uri.auth.task1);
 });
 /*
@@ -73,12 +76,18 @@ server.post("/image", function(req, res) {
   let imagenUri = req.body.imageUri;
   console.log("Uri de la imagen: " + imagenUri);
   let formattedRequest = googleClient.setRequest(imagenUri);
-  let promise = googleClient.getImageAnnotated(formattedRequest);
-  promise.then(imageAnnotated => {
-      let q = imageAnnotated[0].webDetection.webEntities[0].description;
-      let imgTransformed = serviceLogic.transformImageAnnotated(imageAnnotated);
-      res.send(imgTransformed);
-      console.log(imageAnnotated[0].labelAnnotations[0].description)
+  let promiseImageAnnotated = googleClient.getImageAnnotated(formattedRequest);
+  promiseImageAnnotated.then(imageAnnotated => {
+      serviceLogic.setImageAnnotated(imageAnnotated);
+      let promiseSearchEngine = serviceLogic.getSearchEngineLabels();
+      promiseSearchEngine.then(searchEngineLabels => {
+        var searchEngineLabelsParsed = JSON.parse(JSON.stringify(searchEngineLabels));
+        var imageWithMergedLabels = mergeJSON.merge(searchEngineLabelsParsed, imageAnnotated[0]);
+        serviceLogic.setFinalImageLabeled(imageWithMergedLabels);
+        imgTransformed = serviceLogic.transformImageLabeled();
+        //guardar en BBDD
+        res.send(imgTransformed);
+      })
     })
     .catch(err => console.log(err.message));
   console.log("Task 2: Getting Image from GoogleVision  --- Successful");
@@ -109,25 +118,6 @@ res: resultado
 */
 server.get("/recentSearchs", function(req, res) {
   console.log("Responding to root route");
-
-  var apiKeySearchEngine = "key=AIzaSyANKZcPxLG3EPNCSdB8M-9jH9S_PljSoU4";
-  var customSearchEngine = "cx=014899129568475050489:mzgfwcuvxte";
-  var quotesSearchEngine = "q=t-shirt";
-  var uriSearchEngine = "https://www.googleapis.com/customsearch/v1" +
-  "?" + apiKeySearchEngine +
-  "&" + customSearchEngine +
-  "&" + quotesSearchEngine;
-  https.get(uriSearchEngine, (res) => { 
-    console.log('statusCode:', res.statusCode);
-    console.log('headers:', res.headers);
-
-    res.on('data', (d) => {
-      process.stdout.write(d);
-    });
-
-  }).on('error', (e) => {
-    console.error(e);
-  });
   console.log("Task 4: Create GoogleClient --- Successful");
   res.send("Respuesta");
 })
