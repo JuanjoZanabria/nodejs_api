@@ -96,14 +96,15 @@ function formatUser(userId) {
 }
 
 function isCustomImg() {
-  return areWebLabelsEmpty(imageAnnotatedTemplate);
+  return areWebLabelsEmpty(finalImageLabelsTemplate);
 }
 
-function areWebLabelsEmpty(imageAnnotatedTemplate) {
+function areWebLabelsEmpty() {
   //console.log("AreWebLabels: " + imageAnnotatedTemplate[0].webDetection.fullMatchingImages[0].url);
   //console.log("AreWebLabels: " + imageAnnotatedTemplate[0].labels.webLabels.fullMatchingImages);
-  let areEmpty = isStringEmpty(imageAnnotatedTemplate[0].webDetection.fullMatchingImages[0].url) &&
-    isStringEmpty(imageAnnotatedTemplate[0].webDetection.pagesWithMatchingImages[0].url) ? true : false;
+  console.log(finalImageLabelsTemplate);
+  let areEmpty = isStringEmpty(finalImageLabelsTemplate.webDetection.fullMatchingImages) &&
+    isStringEmpty(finalImageLabelsTemplate.webDetection.pagesWithMatchingImages) ? true : false;
   return areEmpty;
 }
 
@@ -142,3 +143,4 @@ module.exports.getFilters = getFilters;
 module.exports.transformImageLabeled = transformImageLabeled;
 module.exports.setImageAnnotated = setImageAnnotated;
 module.exports.setFinalImageLabeled = setFinalImageLabeled;
+module.exports.getSearchEngineLabels = getSearchEngineLabels;
