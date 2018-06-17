@@ -48,16 +48,24 @@
   }
 
   function getUserId(user) {
+  //  var usuario =
     var usuario = User.findOne({
       'email': user.email
-    });
-    if (usuario)
-    {
-      console.log(usuario.schema.Schema);
-      var id = usuario.schema.Schema;
-      console.log(id.paths);
-      return id;
-    }
+    }, function(err, obj) {
+      if(obj){
+        console.log("Objeto usuario: " + obj._id);
+        return obj._id;
+      }
+       });
+  //  if (usuario)
+  //  {
+  //    console.log("Esquema usuario: " + JSON.stringify(usuario.schema));
+  //    var id = usuario.schema;
+  //    console.log("Id de usuario: " + JSON.stringify(id.paths._id.path));
+  console.log("Usuario: " + JSON.stringify(usuario));
+      return usuario;
+  //  }
+
   }
 
 

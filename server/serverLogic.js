@@ -50,11 +50,11 @@ function getImageFromDB(idImage) {
 }
 
 function requestUser(user) {
+  console.log("Request user");
   userTemplate = user;
-  console.log(userTemplate);
   //let userId = isUserSignedUpAlready() ? getUserId() : addUser();
-  let userId = getUserId();
-  console.log("RequestUserID "+userId);
+   let userId = getUserId();
+  console.log("RequestUserID "+ userId);
   return formatUser(userId);
 }
 
@@ -120,11 +120,13 @@ function addUser() {
 function getUserId() {
   userDataAccess.openConnection();
   let userId = userDataAccess.getUserId(userTemplate);
+  console.log("Get userId: " + userId);
   userDataAccess.closeConnection();
   return userId;
 }
 
 function formatUser(userId) {
+  console.log("Format user id: " + userId);
   let formattedUserIdResponse = {
     "idUser": userId
   }
