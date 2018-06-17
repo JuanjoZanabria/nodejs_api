@@ -5,12 +5,10 @@ const credentials = {
 const client = new vision.ImageAnnotatorClient(credentials);
 
 //'gs://gapbbdd/IMG_6577_ok.jpg'
-function setRequest(imageUri) {
+function setRequest(imageBase64) {
   let request = {
     image: {
-      source: {
-        imageUri: imageUri
-      }
+      content: imageBase64
     },
     features: [{
         type: "WEB_DETECTION"
@@ -35,7 +33,7 @@ function setRequest(imageUri) {
 function getImageAnnotated(request) {
   let googlePromise = client
     .annotateImage(JSON.parse(request));
-    return googlePromise;
+  return googlePromise;
 }
 
 module.exports.setRequest = setRequest;

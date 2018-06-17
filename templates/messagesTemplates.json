@@ -4,13 +4,16 @@
       "auth": {
         "incorrectRequestBody": {
           "status": "400",
-          "text":"Parametro body en la llamada a la uri /auth es incorrecta o incompleta."
+          "text": "Parametro body en la llamada a la uri /auth es incorrecta o incompleta."
         },
         "called": "Responding to auth route",
         "task1": "Task 1: Insert in BBDD the user --- Successful"
       },
       "image": {
-        "incorrectRequestBody": "Parametro body en la llamada a la uri /image es incorrecta o incompleta.",
+        "incorrectRequestBody": {
+          "status": "400",
+          "text": "Parametros en la llamada a la uri /image es incorrecta o incompleta."
+        },
         "called": "Responding to image route"
       }
     }

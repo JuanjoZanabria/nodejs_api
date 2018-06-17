@@ -10,31 +10,23 @@
     mongoose.connection.close();
   }
 
-  function isUserSignedUpAlready(user) {
+  function isUserSignedUpAlready(user, callback) {
+    openConnection();
     User.findOne({
       'email': user.email
-    }, function(err, result) {
-      if (!result) {
-        return false;
+    }, function(err, userExists) {
+      closeConnection();
+      if (userExists) {
+        callback(true);
       } else {
-        return true;
+        callback(false);
       }
     });
   }
 
-  function addUser(user) {
-    var n = new User();
-    n.name.firstName = user.name.firstName;
-    n.name.lastName = user.name.lastName;
-    n.name.fullName = user.name.fullName;
-    n.email = user.email;
-    n.picture = user.picture;
-    console.log("adduser");
-    n.save(function(err, room) {
-      console.log(room.id);
-      return room.id;
-    });
-    /*User.create({
+  function addUser(user, callback) {
+    var newUser = new User({
+      _id: new mongoose.Types.ObjectId(),
       name: {
         firstName: user.name.firstName,
         lastName: user.name.lastName,
@@ -42,35 +34,37 @@
       },
       email: user.email,
       picture: user.picture
-    }, function(err, room) {
-      return room._id;
-    });*/
+    });
+    openConnection();
+    newUser.save(function(err, userAdded) {
+      closeConnection();
+      callback(userAdded._id);
+    });
   }
 
-  function getUserId(user) {
-  //  var usuario =
-    var usuario = User.findOne({
+  function getUserId(user, callback) {
+    openConnection();
+    User.findOne({
       'email': user.email
-    }, function(err, obj) {
-      if(obj){
-        console.log("Objeto usuario: " + obj._id);
-        return obj._id;
-      }
-       });
-  //  if (usuario)
-  //  {
-  //    console.log("Esquema usuario: " + JSON.stringify(usuario.schema));
-  //    var id = usuario.schema;
-  //    console.log("Id de usuario: " + JSON.stringify(id.paths._id.path));
-  console.log("Usuario: " + JSON.stringify(usuario));
-      return usuario;
-  //  }
-
+    }, function(err, userFound) {
+      closeConnection();
+      callback(userFound._id);
+    });
   }
 
+  function getUserById(userID, callback) {
+    openConnection();
+    User.findById(userID, function(err, userExists) {
+      closeConnection();
+      if (userExists) {
+        callback(true);
+      } else {
+        callback(false);
+      }
+    });
+  }
 
+  module.exports.getUserById = getUserById;
   module.exports.getUserId = getUserId;
   module.exports.addUser = addUser;
   module.exports.isUserSignedUpAlready = isUserSignedUpAlready;
-  module.exports.closeConnection = closeConnection;
-  module.exports.openConnection = openConnection;

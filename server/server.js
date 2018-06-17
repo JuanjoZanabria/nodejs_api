@@ -40,7 +40,14 @@ Lanzar el servidor en el puerto 3003
 server.listen(3003, function() {
   console.log("Server is up and listening on 3003...");
 })
-server.use(bodyParser.json()); // support json encoded bodies
+
+server.use(bodyParser.urlencoded({
+  limit: '50mb',
+  extended: false
+}));
+server.use(bodyParser.json({
+  limit: '50mb'
+}));
 
 /*
 desc: Asignar token al usuario
@@ -49,22 +56,16 @@ req: credenciales (correo, nombre completo, foto)
 res: id del usuario
 */
 server.post("/auth", function(req, res) {
+  console.log(templates.messages.uri.auth.called);
   if (serviceValidate.validateUser(req.body)) {
-    let response = serviceLogic.requestUser(req.body);
-    console.log(response);
-    res.send(response);
-    console.log(templates.messages.uri.auth.task1);
+    serviceLogic.requestUser(req.body, function(userId) {
+      res.send(userId);
+      console.log(templates.messages.uri.auth.task1);
+    });
   } else {
     let response = templates.messages.uri.auth.incorrectRequestBody;
     res.status(response.status).send(response.text);
   }
-  console.log(templates.messages.uri.auth.called);
-  //conexion a base de datos
-  //consulta que inserte el usuario y devuelva en idUsuario el id:
-  //insert(fullName, email, profilePicture) values (fullName,email,profilePicture)
-  //addParameters () comprobar nulos
-  //Ejecutar
-  //idUsuario = resultado de la consulta.
 });
 /*
 desc: Identifica fotografia y devuelve toda la informacion
@@ -72,26 +73,42 @@ queryParams: N/A
 req: token, imageUri
 res: resultado, idImagen en BBDD
 */
-server.post("/image", function(req, res) {
+server.post("/user/:idUser/image", function(req, res) {
   console.log(templates.messages.uri.image.called);
-  let imagenUri = req.body.imageUri;
-  console.log("Uri de la imagen: " + imagenUri);
-  let formattedRequest = googleClient.setRequest(imagenUri);
-  let promiseImageAnnotated = googleClient.getImageAnnotated(formattedRequest);
-  promiseImageAnnotated.then(imageAnnotated => {
-      serviceLogic.setImageAnnotated(imageAnnotated);
-      let promiseSearchEngine = serviceLogic.getSearchEngineLabels();
-      promiseSearchEngine.then(searchEngineLabels => {
-        var searchEngineLabelsParsed = JSON.parse(JSON.stringify(searchEngineLabels));
-        var imageWithMergedLabels = mergeJSON.merge(searchEngineLabelsParsed, imageAnnotated[0]);
-        serviceLogic.setFinalImageLabeled(imageWithMergedLabels);
-        imgTransformed = serviceLogic.transformImageLabeled();
-        //guardar en BBDD
-        res.send(imgTransformed);
-      })
-    })
-    .catch(err => console.log(err.message));
-  console.log("Task 2: Getting Image from GoogleVision  --- Successful");
+  //if (serviceValidate.validateUser(req.body))
+  let idUser = req.params.idUser;
+  //if (serviceValidate.validateimageBase64(req.body)
+  let imageBase64 = req.body.imageBase64;
+  let formattedRequest = googleClient.setRequest(imageBase64);
+
+  serviceValidate.userExists(idUser, function(exists) {
+    if (exists) {
+      let promiseImageAnnotated = googleClient.getImageAnnotated(formattedRequest);
+      promiseImageAnnotated.then(imageAnnotated => {
+          serviceLogic.setImageAnnotated(imageAnnotated);
+          let promiseSearchEngine = serviceLogic.getSearchEngineLabels();
+
+          promiseSearchEngine.then(searchEngineLabels => {
+            var searchEngineLabelsParsed = JSON.parse(JSON.stringify(searchEngineLabels));
+            var imageWithMergedLabels = mergeJSON.merge(searchEngineLabelsParsed, imageAnnotated[0]);
+            serviceLogic.setFinalImageLabeled(imageWithMergedLabels);
+            imgTransformed = serviceLogic.transformImageLabeled();
+            serviceLogic.setUser(idUser);
+            serviceLogic.saveImage(function(idImageSaved) {
+              console.log("Task 2: Getting Image from GoogleVision  --- Successful");
+              res.status(200).json({
+                "idImage": idImageSaved,
+                "image": imgTransformed
+              });
+            });
+          }).catch(err => console.log(err.message));
+        })
+        .catch(err => console.log(err.message));
+    } else {
+      let response = templates.messages.uri.image.incorrectRequestBody;
+      res.status(response.status).send(response.text);
+    }
+  });
 })
 
 /*
@@ -100,7 +117,7 @@ pathParams: idSolicitud
 req: N/A
 res: resultado
 */
-server.get("/image/:idImage", function(req, res) {
+server.get("/user/:idUser/image/:idImage", function(req, res) {
   let filters = getFilters(req);
   let idImage = req.params.idImage;
   let originalImage = serviceLogic.getImageFromDB(idImage);
@@ -117,10 +134,21 @@ queryParams: token, filtros, lote
 req: N/A
 res: resultado
 */
-server.get("/recentSearchs", function(req, res) {
-  console.log("Responding to root route");
-  console.log("Task 4: Create GoogleClient --- Successful");
-  res.send("Respuesta");
+server.get("/user/:idUser/recentSearches", function(req, res) {
+  let idUser = req.params.idUser;
+  serviceValidate.userExists(idUser, function(exists) {
+    if (exists) {
+      serviceLogic.setUser(idUser);
+      serviceLogic.getRecentSearches(function(recentSearches) {
+        console.log("Responding to root route");
+        console.log("Task 4: Create GoogleClient --- Successful");
+        res.send(recentSearches);
+      })
+    } else {
+      let response = templates.messages.uri.image.incorrectRequestBody;
+      res.status(response.status).send(response.text);
+    }
+  });
 })
 /*
 desc: Permite ver y filtrar las busquedas populares por lotes
@@ -128,10 +156,13 @@ queryParams: filtros, lote
 req: N/A
 res: resultado
 */
-server.get("/popularSearchs", function(req, res) {
-  console.log("Responding to root route");
-  console.log("Task 5: Create GoogleClient --- Successful");
-  res.send("Respuesta");
+server.get("/popularSearches", function(req, res) {
+  serviceLogic.getPopularSearches(function(popularSearches){
+    console.log("Responding to root route");
+    console.log("Task 5: Create GoogleClient --- Successful");
+    res.send(popularSearches);
+  });
+
 })
 /*
 desc: Permite ver y filtrar los favoritos por lotes
@@ -139,8 +170,44 @@ queryParams: token, filtros, lote
 req: N/A
 res: resultado
 */
-server.get("/favoriteSearchs", function(req, res) {
-  console.log("Responding to root route");
-  console.log("Task 6: Create GoogleClient --- Successful");
-  res.send("Respuesta");
+server.get("/user/:idUser/favoriteSearches", function(req, res) {
+  let idUser = req.params.idUser;
+  serviceValidate.userExists(idUser, function(exists) {
+    if (exists) {
+      serviceLogic.setUser(idUser);
+      serviceLogic.getFavorites(function(favorites) {
+        console.log("Responding to root route");
+        console.log("Task 6: Create GoogleClient --- Successful");
+        res.send(favorites);
+      })
+    } else {
+      let response = templates.messages.uri.image.incorrectRequestBody;
+      res.status(response.status).send(response.text);
+    }
+  });
+})
+
+server.put("/user/:idUser/image/:idImage", function(req, res) {
+  let idUser = req.params.idUser;
+  let idImage = req.params.idImage;
+  serviceValidate.userExists(idUser, function(exists) {
+    if (exists) {
+      serviceLogic.setUser(idUser);
+      serviceValidate.imageExists(idImage, function(exists){
+        if(exists){
+          serviceLogic.setFavorites(idImage,function(status) {
+            console.log("Responding to root route");
+            console.log("Task 6: Create GoogleClient --- Successful");
+            res.status(200).send("Favorito: "+ status);
+          });
+        }else{
+          let response = templates.messages.uri.image.incorrectRequestBody;
+          res.status(response.status).send(response.text);
+        }
+      });
+    } else {
+      let response = templates.messages.uri.image.incorrectRequestBody;
+      res.status(response.status).send(response.text);
+    }
+  });
 })

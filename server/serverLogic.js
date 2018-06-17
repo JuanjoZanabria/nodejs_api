@@ -1,6 +1,7 @@
 const labels = require('../templates/labelsTemplates.json');
 const searchEngineClient = require('../api/searchEngineClient');
 const userDataAccess = require('../repository/userDataAccess');
+const imageDataAccess = require('../repository/imageDataAccess');
 /*
 Atributos
 */
@@ -17,14 +18,44 @@ var userTemplate = {
   email: "",
   picture: ""
 };
+var idUser = "";
 
 //Public Methods
+function getPopularSearches(callback) {
+  imageDataAccess.getImagePopularSearches(function(images) {
+    let popularImages = getImagesWithPopularDescriptions(images);
+    callback(popularImages);
+  });
+}
+
+function setFavorites(idImage, callback) {
+  imageDataAccess.setImageFavoriteValue(idImage, function(status) {
+    callback(status);
+  });
+}
+
+function getRecentSearches(callback) {
+  imageDataAccess.getRecentSearches(idUser, function(recentSearches) {
+    callback(recentSearches);
+  });
+}
+
+function getFavorites(callback) {
+  imageDataAccess.getFavorites(idUser, function(favorites) {
+    callback(favorites);
+  });
+}
+
 function setImageAnnotated(imageAnnotated) {
   imageAnnotatedTemplate = imageAnnotated;
 }
 
 function setFinalImageLabeled(finalImageLabeled) {
   finalImageLabelsTemplate = finalImageLabeled;
+}
+
+function setUser(iduser) {
+  idUser = iduser;
 }
 
 function transformImageLabeled() {
@@ -49,13 +80,25 @@ function getImageFromDB(idImage) {
   return originalImage;
 }
 
-function requestUser(user) {
-  console.log("Request user");
+function saveImage(callback) {
+  imageDataAccess.saveImage(idUser, imgTransformed, function(idImageSaved) {
+    callback(idImageSaved);
+  });
+}
+
+function requestUser(user, callback) {
   userTemplate = user;
-  //let userId = isUserSignedUpAlready() ? getUserId() : addUser();
-   let userId = getUserId();
-  console.log("RequestUserID "+ userId);
-  return formatUser(userId);
+  isUserSignedUpAlready(function(isSignedUp) {
+    if (isSignedUp) {
+      getUserId(function(userId) {
+        callback(formatUser(userId));
+      });
+    } else {
+      addUser(function(userId) {
+        callback(formatUser(userId));
+      });
+    }
+  });
 }
 
 function applyFilters(originalImage, filters) {
@@ -79,6 +122,45 @@ function getFilters(req) {
 }
 
 // Private Methods
+function getImagesWithPopularDescriptions(images) {
+  let keywords = [];
+  for (var image in images) {
+    let idAndKeyword = image.split("/");
+    keywords.push(idAndKeyword[1]);
+  };
+  let keywordsSortedAndUnique = sortByFrequency(keywords);
+  keywordsSortedAndUnique.forEach(function() {
+    keywordsSortedAndUnique.splice(1, keywordsSortedAndUnique.length - 1);
+  });
+  var popularImages = {};
+  for (var image in images) {
+    let clave = image.split("/");
+    keywordsSortedAndUnique.forEach(function(keyword) {
+      if (clave[1] == keyword) {
+        let ruta = clave[0] + "/" + keyword;
+        popularImages[ruta] = images[ruta];
+      }
+    })
+  }
+  return popularImages;
+}
+
+function sortByFrequency(array) {
+  var frequency = {};
+
+  array.forEach(function(value) {
+    frequency[value] = 0;
+  });
+
+  var uniques = array.filter(function(value) {
+    return ++frequency[value] == 1;
+  });
+
+  return uniques.sort(function(a, b) {
+    return frequency[b] - frequency[a];
+  });
+}
+
 function setQuotesToSearch(quoteLogo, quoteWebEntity) {
   return quoteLogo + quoteWebEntity;
 }
@@ -103,30 +185,25 @@ function getWebEntities() {
   return webEntitiesDescriptions;
 }
 
-function isUserSignedUpAlready() {
-  userDataAccess.openConnection();
-  let isUserSignedUpAlready = userDataAccess.isUserSignedUpAlready(userTemplate);
-  userDataAccess.closeConnection();
-  return isUserSignedUpAlready;
+function isUserSignedUpAlready(callback) {
+  userDataAccess.isUserSignedUpAlready(userTemplate, function(isUserSignedUp) {
+    callback(isUserSignedUp);
+  });
 }
 
-function addUser() {
-  userDataAccess.openConnection();
-  let userAddedId = userDataAccess.addUser(userTemplate);
-  userDataAccess.closeConnection();
-  return userAddedId;
+function addUser(callback) {
+  userDataAccess.addUser(userTemplate, function(userId) {
+    callback(userId);
+  });
 }
 
-function getUserId() {
-  userDataAccess.openConnection();
-  let userId = userDataAccess.getUserId(userTemplate);
-  console.log("Get userId: " + userId);
-  userDataAccess.closeConnection();
-  return userId;
+function getUserId(callback) {
+  userDataAccess.getUserId(userTemplate, function(userId) {
+    callback(userId);
+  });
 }
 
 function formatUser(userId) {
-  console.log("Format user id: " + userId);
   let formattedUserIdResponse = {
     "idUser": userId
   }
@@ -138,7 +215,6 @@ function isCustomImg() {
 }
 
 function areWebLabelsEmpty() {
-  console.log(finalImageLabelsTemplate);
   let areEmpty = isStringEmpty(finalImageLabelsTemplate.webDetection.fullMatchingImages) &&
     isStringEmpty(finalImageLabelsTemplate.webDetection.pagesWithMatchingImages) ? true : false;
   return areEmpty;
@@ -156,6 +232,13 @@ function makeTemplateForCustomImg() {
   imgTransformed = finalImageLabelsTemplate;
 }
 
+module.exports.getPopularSearches = getPopularSearches;
+module.exports.setFavorites = setFavorites;
+module.exports.getFavorites = getFavorites;
+module.exports.getRecentSearches = getRecentSearches;
+module.exports.getUserId = getUserId;
+module.exports.setUser = setUser;
+module.exports.saveImage = saveImage;
 module.exports.requestUser = requestUser;
 module.exports.getImageFromDB = getImageFromDB;
 module.exports.applyFilters = applyFilters;
