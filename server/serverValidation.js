@@ -80,7 +80,7 @@ function userExists(userId, callback) {
 }
 
 function imageExists(idImage, callback) {
-  imageDataAccess.getImageById(idImage, function(imageExists) {
+  imageDataAccess.checkImageById(idImage, function(imageExists) {
     callback(imageExists);
   });
 }

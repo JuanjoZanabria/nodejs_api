@@ -56,7 +56,7 @@ function getFavorites(idUser, callback) {
   });
 }
 
-function getImageById(idImage, callback) {
+function checkImageById(idImage, callback) {
   openConnection();
   Image.findById(idImage, function(err, imageExists) {
     closeConnection();
@@ -64,6 +64,16 @@ function getImageById(idImage, callback) {
       callback(true);
     } else {
       callback(false);
+    }
+  });
+}
+
+function getImageById(idImage, callback) {
+  openConnection();
+  Image.findById(idImage, function(err, mongoImage) {
+    closeConnection();
+    if (mongoImage) {
+      callback(mongoImage);
     }
   });
 }
@@ -86,14 +96,15 @@ function getImagePopularSearches(callback) {
     images.forEach(function(image) {
       popularImages[image._id + "/" + image.keyword] = image.content;
     });
-      closeConnection();
-      callback(popularImages);
-    });
+    closeConnection();
+    callback(popularImages);
+  });
 }
 
+module.exports.getImageById = getImageById;
 module.exports.getImagePopularSearches = getImagePopularSearches;
 module.exports.setImageFavoriteValue = setImageFavoriteValue;
-module.exports.getImageById = getImageById;
+module.exports.checkImageById = checkImageById;
 module.exports.getFavorites = getFavorites;
 module.exports.saveImage = saveImage;
 module.exports.getRecentSearches = getRecentSearches;

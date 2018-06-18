@@ -19,6 +19,7 @@ var userTemplate = {
   picture: ""
 };
 var idUser = "";
+var filteredImage = {};
 
 //Public Methods
 function getPopularSearches(callback) {
@@ -75,9 +76,10 @@ function getSearchEngineLabels() {
   return promise;
 }
 
-function getImageFromDB(idImage) {
-  let originalImage = {};
-  return originalImage;
+function getImage(idImage, callback) {
+  imageDataAccess.getImageById(idImage, function(mongoImage) {
+    callback(mongoImage);
+  });
 }
 
 function saveImage(callback) {
@@ -102,26 +104,61 @@ function requestUser(user, callback) {
 }
 
 function applyFilters(originalImage, filters) {
-  if (filters.percentage != "") {
-    let desirePercentage = filters.percentage;
-    filterByPercentage(originalImage, desirePercentage);
-  }
-}
-
-function filterByPercentage(originalImage, desirePercentage) {
-
+  let filterKeys = Object.keys(filters);
+  filteredImage = originalImage;
+  filterKeys.forEach(function(key) {
+    let filterValue = filterKeys[key];
+    switch (filterValue) {
+      case "percentage":
+        filterByPercentage(filterValue);
+      case "category":
+        filterByCategory(filterValue);
+      case "shops":
+        filterByShops(filterValue);
+      default:
+        return filteredImage;
+    }
+  })
+  return filteredImage;
 }
 
 function getFilters(req) {
+  let category = req.query.category ? req.query.category : "";
+  let percentage = req.query.percentage ? req.query.percentage : "";
+  let shops = req.query.shops ? req.query.shops : "";
   let filters = {
-    "category": req.query.Category,
-    "percentage": req.query.Percentage,
-    "shops": req.query.Shops
-  }
-  return filters;
+    "category": category,
+    "percentage": percentage,
+    "shops": shops
+  };
+  let finalFilters = {};
+  let filtersKeys = Object.keys(filters);
+  let filterValues = Object.values(filters);
+  filtersKeys.forEach(function(key) {
+    if (filters[key] != "") finalFilters[key] = filters[key];
+  })
+  return finalFilters;
 }
 
 // Private Methods
+function filterByPercentage(percentage) {
+  let filteredByPercentageImage = filteredImage;
+
+  filteredImage = filteredByPercentageImage;
+}
+
+function filterByCategory(category) {
+  let filteredByCategoryImage = filteredImage;
+
+  filteredImage = filteredByCategoryImage;
+}
+
+function filterByShops(shops) {
+  let filteredByShopsImage = filteredImage;
+
+  filteredImage = filteredByShopsImage;
+}
+
 function getImagesWithPopularDescriptions(images) {
   let keywords = [];
   for (var image in images) {
@@ -240,7 +277,7 @@ module.exports.getUserId = getUserId;
 module.exports.setUser = setUser;
 module.exports.saveImage = saveImage;
 module.exports.requestUser = requestUser;
-module.exports.getImageFromDB = getImageFromDB;
+module.exports.getImage = getImage;
 module.exports.applyFilters = applyFilters;
 module.exports.getFilters = getFilters;
 module.exports.transformImageLabeled = transformImageLabeled;

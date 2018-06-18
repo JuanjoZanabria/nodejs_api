@@ -118,15 +118,19 @@ req: N/A
 res: resultado
 */
 server.get("/user/:idUser/image/:idImage", function(req, res) {
-  let filters = getFilters(req);
   let idImage = req.params.idImage;
-  let originalImage = serviceLogic.getImageFromDB(idImage);
-  let filteredImage = serviceLogic.applyFilters(originalImage, filters);
-  console.log("Responding to root route");
-  console.log(filters);
-  console.log(idImage);
-  console.log("Task 3: Create GoogleClient --- Successful");
-  res.send(filteredImage);
+  console.log("Filtros entrada "+ JSON.stringify(req.query));
+  let filters = serviceLogic.getFilters(req);
+  serviceLogic.getImage(idImage, function(mongoImage) {
+    if (mongoImage) {
+      console.log(filters);
+      let filteredImage = serviceLogic.applyFilters(mongoImage, filters);
+      console.log("Responding to root route");
+      console.log("Task 3: Create GoogleClient --- Successful");
+      res.send(filteredImage);
+    }
+  });
+
 })
 /*
 desc: Permite ver y filtrar las busquedas recientes por lotes
@@ -157,7 +161,7 @@ req: N/A
 res: resultado
 */
 server.get("/popularSearches", function(req, res) {
-  serviceLogic.getPopularSearches(function(popularSearches){
+  serviceLogic.getPopularSearches(function(popularSearches) {
     console.log("Responding to root route");
     console.log("Task 5: Create GoogleClient --- Successful");
     res.send(popularSearches);
@@ -193,14 +197,14 @@ server.put("/user/:idUser/image/:idImage", function(req, res) {
   serviceValidate.userExists(idUser, function(exists) {
     if (exists) {
       serviceLogic.setUser(idUser);
-      serviceValidate.imageExists(idImage, function(exists){
-        if(exists){
-          serviceLogic.setFavorites(idImage,function(status) {
+      serviceValidate.imageExists(idImage, function(exists) {
+        if (exists) {
+          serviceLogic.setFavorites(idImage, function(status) {
             console.log("Responding to root route");
             console.log("Task 6: Create GoogleClient --- Successful");
-            res.status(200).send("Favorito: "+ status);
+            res.status(200).send("Favorito: " + status);
           });
-        }else{
+        } else {
           let response = templates.messages.uri.image.incorrectRequestBody;
           res.status(response.status).send(response.text);
         }
