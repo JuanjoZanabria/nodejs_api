@@ -261,6 +261,11 @@ function isStringEmpty(value) {
   return value == "";
 }
 
+//Tempalte de lkas  imagenes importante
+//Web : SE + APIVISION solo etiquetas importantes
+//Los tres filtros
+//CUSTOMIMG: SE + logo si hay del APIVISION
+//Quitar filtro de porcentaje
 function makeTemplateForWebImg() {
   imgTransformed = finalImageLabelsTemplate;
 }
