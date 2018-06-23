@@ -7,7 +7,10 @@ Atributos
 */
 var imageAnnotatedTemplate = {};
 var finalImageLabelsTemplate = {};
-var imgTransformed = {};
+var imgTransformed = {
+  queries: "",
+  items: [Object]
+};
 var maxNumberOfDescriptionsWanted = 5;
 var userTemplate = {
   name: {
@@ -60,11 +63,8 @@ function setUser(iduser) {
 }
 
 function transformImageLabeled() {
-  if (isCustomImg()) {
-    makeTemplateForCustomImg()
-  } else {
-    makeTemplateForWebImg();
-  }
+  imgTransformed.queries = finalImageLabelsTemplate.queries;
+  imgTransformed.items = finalImageLabelsTemplate.items;
   return imgTransformed;
 }
 
@@ -107,8 +107,9 @@ function applyFilters(originalImage, filters) {
   let filterKeys = Object.keys(filters);
   filteredImage = originalImage;
   filterKeys.forEach(function(key) {
-    let filterValue = filterKeys[key];
-    switch (filterValue) {
+    let filterValue = filters[key];
+    console.log(filterValue);
+    switch (key) {
       case "percentage":
         filterByPercentage(filterValue);
       case "category":
@@ -143,19 +144,34 @@ function getFilters(req) {
 // Private Methods
 function filterByPercentage(percentage) {
   let filteredByPercentageImage = filteredImage;
-
   filteredImage = filteredByPercentageImage;
 }
 
 function filterByCategory(category) {
   let filteredByCategoryImage = filteredImage;
-
   filteredImage = filteredByCategoryImage;
 }
 
 function filterByShops(shops) {
-  let filteredByShopsImage = filteredImage;
+  let arrayShops = shops.split(" ");
+  let filteredByShopsImage = {
+    items: [String]
+  };
+  let positionFilteredImageItems = 0;
+  let positionFilteredByShopsImageItems = 0;
+  while (positionFilteredImageItems < filteredImage.content.items.length) {
+    let link = filteredImage.content.items[positionFilteredImageItems].displayLink;
+    let arrayLink = link.split(".");
+    if (arrayShops.indexOf(arrayLink[1]) >= 0) {
+      filteredByShopsImage.items[positionFilteredByShopsImageItems] = filteredImage.content.items[positionFilteredImageItems];
+      positionFilteredByShopsImageItems++;
+    } else if (arrayShops.indexOf(arrayLink[1]) >= 0) {
+      filteredByShopsImage.items[positionFilteredByShopsImageItems] = filteredImage.content.items[positionFilteredImageItems];
+      positionFilteredByShopsImageItems++;
+    }
+    positionFilteredImageItems++;
 
+  }
   filteredImage = filteredByShopsImage;
 }
 
@@ -247,31 +263,8 @@ function formatUser(userId) {
   return formattedUserIdResponse;
 }
 
-function isCustomImg() {
-  return areWebLabelsEmpty(finalImageLabelsTemplate);
-}
-
-function areWebLabelsEmpty() {
-  let areEmpty = isStringEmpty(finalImageLabelsTemplate.webDetection.fullMatchingImages) &&
-    isStringEmpty(finalImageLabelsTemplate.webDetection.pagesWithMatchingImages) ? true : false;
-  return areEmpty;
-}
-
 function isStringEmpty(value) {
   return value == "";
-}
-
-//Tempalte de lkas  imagenes importante
-//Web : SE + APIVISION solo etiquetas importantes
-//Los tres filtros
-//CUSTOMIMG: SE + logo si hay del APIVISION
-//Quitar filtro de porcentaje
-function makeTemplateForWebImg() {
-  imgTransformed = finalImageLabelsTemplate;
-}
-
-function makeTemplateForCustomImg() {
-  imgTransformed = finalImageLabelsTemplate;
 }
 
 module.exports.getPopularSearches = getPopularSearches;

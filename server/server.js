@@ -75,40 +75,41 @@ res: resultado, idImagen en BBDD
 */
 server.post("/user/:idUser/image", function(req, res) {
   console.log(templates.messages.uri.image.called);
-  //if (serviceValidate.validateUser(req.body))
   let idUser = req.params.idUser;
-  //if (serviceValidate.validateimageBase64(req.body)
-  let imageBase64 = req.body.imageBase64;
-  let formattedRequest = googleClient.setRequest(imageBase64);
-
-  serviceValidate.userExists(idUser, function(exists) {
-    if (exists) {
-      let promiseImageAnnotated = googleClient.getImageAnnotated(formattedRequest);
-      promiseImageAnnotated.then(imageAnnotated => {
-          serviceLogic.setImageAnnotated(imageAnnotated);
-          let promiseSearchEngine = serviceLogic.getSearchEngineLabels();
-
-          promiseSearchEngine.then(searchEngineLabels => {
-            var searchEngineLabelsParsed = JSON.parse(JSON.stringify(searchEngineLabels));
-            var imageWithMergedLabels = mergeJSON.merge(searchEngineLabelsParsed, imageAnnotated[0]);
-            serviceLogic.setFinalImageLabeled(imageWithMergedLabels);
-            imgTransformed = serviceLogic.transformImageLabeled();
-            serviceLogic.setUser(idUser);
-            serviceLogic.saveImage(function(idImageSaved) {
-              console.log("Task 2: Getting Image from GoogleVision  --- Successful");
-              res.status(200).json({
-                "idImage": idImageSaved,
-                "image": imgTransformed
+  if (serviceValidate.validateImageBase64(req.body.imageBase64)) {
+    let imageBase64 = req.body.imageBase64;
+    let formattedRequest = googleClient.setRequest(imageBase64);
+    serviceValidate.userExists(idUser, function(exists) {
+      if (exists) {
+        let promiseImageAnnotated = googleClient.getImageAnnotated(formattedRequest);
+        promiseImageAnnotated.then(imageAnnotated => {
+            serviceLogic.setImageAnnotated(imageAnnotated);
+            let promiseSearchEngine = serviceLogic.getSearchEngineLabels();
+            promiseSearchEngine.then(searchEngineLabels => {
+              var searchEngineLabelsParsed = JSON.parse(JSON.stringify(searchEngineLabels));
+              var imageWithMergedLabels = mergeJSON.merge(searchEngineLabelsParsed, imageAnnotated[0]);
+              serviceLogic.setFinalImageLabeled(imageWithMergedLabels);
+              imgTransformed = serviceLogic.transformImageLabeled();
+              serviceLogic.setUser(idUser);
+              serviceLogic.saveImage(function(idImageSaved) {
+                console.log("Task 2: Getting Image from GoogleVision  --- Successful");
+                res.status(200).json({
+                  "idImage": idImageSaved,
+                  "image": imgTransformed
+                });
               });
-            });
-          }).catch(err => console.log(err.message));
-        })
-        .catch(err => console.log(err.message));
-    } else {
-      let response = templates.messages.uri.image.incorrectRequestBody;
-      res.status(response.status).send(response.text);
-    }
-  });
+            }).catch(err => console.log("1"+err.message));
+          })
+          .catch(err => console.log("2"+err.message));
+      } else {
+        let response = templates.messages.uri.image.incorrectRequestBody;
+        res.status(response.status).send(response.text);
+      }
+    });
+  }else{
+    let response = templates.messages.uri.image.incorrectRequestBody;
+    res.status(response.status).send(response.text);
+  }
 })
 
 /*
@@ -119,11 +120,11 @@ res: resultado
 */
 server.get("/user/:idUser/image/:idImage", function(req, res) {
   let idImage = req.params.idImage;
-  console.log("Filtros entrada "+ JSON.stringify(req.query));
+  console.log("Filtros entrada " + JSON.stringify(req.query));
   let filters = serviceLogic.getFilters(req);
   serviceLogic.getImage(idImage, function(mongoImage) {
     if (mongoImage) {
-      console.log(filters);
+      console.log("Server filters " + JSON.stringify(filters));
       let filteredImage = serviceLogic.applyFilters(mongoImage, filters);
       console.log("Responding to root route");
       console.log("Task 3: Create GoogleClient --- Successful");
@@ -191,6 +192,12 @@ server.get("/user/:idUser/favoriteSearches", function(req, res) {
   });
 })
 
+/*
+desc: Permite actualizar una imagen como favorita
+queryParams: idUser, idImage
+req: N/A
+res: resultado
+*/
 server.put("/user/:idUser/image/:idImage", function(req, res) {
   let idUser = req.params.idUser;
   let idImage = req.params.idImage;

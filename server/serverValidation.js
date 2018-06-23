@@ -5,6 +5,19 @@ const nameLength = 3;
 var request;
 var labels;
 
+function validateImageBase64(imageBase64) {
+  let isEncodedBase64 = false;
+  try {
+    window.atob(imageBase64);
+    isEncodedBase64 = true;
+  } catch (err) {
+    isEncodedBase64 = false;
+  } finally {
+    console.log(isEncodedBase64);
+    return isEncodedBase64;
+  }
+}
+
 function validateUser(requestBody) {
   request = requestBody;
   labels = Object.keys(request);
@@ -50,22 +63,6 @@ function allLabelsHaveValue(keys) {
     });
     return true;
   });
-
-  /*
-      for (var label = 0; label < Object.keys(keys).length; label++) {
-        let valuesDelParametroEntrada = Object.values(keys);
-        console.log("iteracion: "+label);
-        console.log("Values de Variab "+valuesDelParametroEntrada);
-        if (Object.getOwnPropertyNames(valuesDelParametroEntrada)) {
-          console.log("Keys de Variab[label] "+Object.keys(valuesDelParametroEntrada[label]));
-          return allLabelsHaveValue(valuesDelParametroEntrada[label]);
-        } else {
-          console.log("Valores de keys "+Object.values(keys));
-          variabe = Object.values(keys);
-          haveValue = isStringEmpty(variabe[label]) ? false : true;
-        }
-      }
-      return haveValue;*/
 }
 
 function isStringEmpty(value) {
@@ -85,6 +82,7 @@ function imageExists(idImage, callback) {
   });
 }
 
+module.exports.validateImageBase64 = validateImageBase64;
 module.exports.imageExists = imageExists;
 module.exports.userExists = userExists;
 module.exports.validateUser = validateUser;
