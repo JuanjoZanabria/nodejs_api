@@ -88,7 +88,6 @@ function getImage(idImage, callback) {
 }
 
 function saveImage(imageBase64, callback) {
-  console.log(imageBase64);
   imageDataAccess.saveImage(imageBase64, idUser, imgTransformed, function(idImageSaved) {
     callback(idImageSaved);
   });

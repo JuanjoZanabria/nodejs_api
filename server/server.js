@@ -76,7 +76,7 @@ res: resultado, idImagen en BBDD
 server.post("/user/:idUser/image", function(req, res) {
   console.log(templates.messages.uri.image.called);
   let idUser = req.params.idUser;
-  if (serviceValidate.validateImageBase64(req.body.imageBase64)) {
+  if (req.body.imageBase64 && serviceValidate.validateImageBase64(req.body.imageBase64)) {
     let imageBase64 = req.body.imageBase64;
     let formattedRequest = googleClient.setRequest(imageBase64);
     serviceValidate.userExists(idUser, function(exists) {
@@ -106,8 +106,7 @@ server.post("/user/:idUser/image", function(req, res) {
         res.status(response.status).send(response.text);
       }
     });
-  } else if (req.body.searchEngineQuotes != "") {
-    console.log(req.body.searchEngineQuotes);
+  } else if (req.body.searchEngineQuotes) {
     let promiseSearchEngine = serviceLogic.getSearchEngineLabels(req.body.searchEngineQuotes);
     promiseSearchEngine.then(searchEngineLabels => {
       var searchEngineLabelsParsed = JSON.parse(JSON.stringify(searchEngineLabels));
@@ -136,7 +135,6 @@ res: resultado
 */
 server.get("/user/:idUser/image/:idImage", function(req, res) {
   let idImage = req.params.idImage;
-  console.log("Filtros entrada " + JSON.stringify(req.query));
   let filters = serviceLogic.getFilters(req);
   serviceLogic.getImage(idImage, function(mongoImage) {
     if (mongoImage) {
@@ -183,7 +181,6 @@ server.get("/popularSearches", function(req, res) {
     console.log("Task 5: Create GoogleClient --- Successful");
     res.send(popularSearches);
   });
-
 })
 /*
 desc: Permite ver y filtrar los favoritos por lotes
