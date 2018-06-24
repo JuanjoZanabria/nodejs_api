@@ -68,10 +68,15 @@ function transformImageLabeled() {
   return imgTransformed;
 }
 
-function getSearchEngineLabels() {
-  let quoteWebEntity = getWebEntities();
-  let quoteLogo = getLogo();
-  let quotes = setQuotesToSearch(quoteLogo, quoteWebEntity);
+function getSearchEngineLabels(SEquotes) {
+  let quotes = "";
+  if (typeof imageAnnotatedTemplate === null) {
+    let quoteWebEntity = getWebEntities();
+    let quoteLogo = getLogo();
+    quotes = setQuotesToSearch(quoteLogo, quoteWebEntity);
+  } else {
+    quotes = SEquotes;
+  }
   let promise = searchEngineClient.callSearchEngine(quotes);
   return promise;
 }
@@ -82,8 +87,9 @@ function getImage(idImage, callback) {
   });
 }
 
-function saveImage(callback) {
-  imageDataAccess.saveImage(idUser, imgTransformed, function(idImageSaved) {
+function saveImage(imageBase64, callback) {
+  console.log(imageBase64);
+  imageDataAccess.saveImage(imageBase64, idUser, imgTransformed, function(idImageSaved) {
     callback(idImageSaved);
   });
 }

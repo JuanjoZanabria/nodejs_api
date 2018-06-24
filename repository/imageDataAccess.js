@@ -10,11 +10,12 @@ function closeConnection() {
   mongoose.connection.close();
 }
 
-function saveImage(idUser, imgTransformed, callback) {
+function saveImage(imageBase64, idUser, imgTransformed, callback) {
   let keyword = imgTransformed.queries.request[0].searchTerms.split(" ");
   var newImage = new Image({
     _id: new mongoose.Types.ObjectId(),
     idUser: idUser,
+    originalImage: imageBase64,
     content: imgTransformed,
     favorite: false,
     keyword: keyword[0],

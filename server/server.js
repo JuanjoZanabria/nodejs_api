@@ -84,29 +84,45 @@ server.post("/user/:idUser/image", function(req, res) {
         let promiseImageAnnotated = googleClient.getImageAnnotated(formattedRequest);
         promiseImageAnnotated.then(imageAnnotated => {
             serviceLogic.setImageAnnotated(imageAnnotated);
-            let promiseSearchEngine = serviceLogic.getSearchEngineLabels();
+            let promiseSearchEngine = serviceLogic.getSearchEngineLabels("");
             promiseSearchEngine.then(searchEngineLabels => {
               var searchEngineLabelsParsed = JSON.parse(JSON.stringify(searchEngineLabels));
               var imageWithMergedLabels = mergeJSON.merge(searchEngineLabelsParsed, imageAnnotated[0]);
               serviceLogic.setFinalImageLabeled(imageWithMergedLabels);
               imgTransformed = serviceLogic.transformImageLabeled();
               serviceLogic.setUser(idUser);
-              serviceLogic.saveImage(function(idImageSaved) {
+              serviceLogic.saveImage(imageBase64, function(idImageSaved) {
                 console.log("Task 2: Getting Image from GoogleVision  --- Successful");
                 res.status(200).json({
                   "idImage": idImageSaved,
                   "image": imgTransformed
                 });
               });
-            }).catch(err => console.log("1"+err.message));
+            }).catch(err => console.log(err.message));
           })
-          .catch(err => console.log("2"+err.message));
+          .catch(err => console.log(err.message));
       } else {
         let response = templates.messages.uri.image.incorrectRequestBody;
         res.status(response.status).send(response.text);
       }
     });
-  }else{
+  } else if (req.body.searchEngineQuotes != "") {
+    console.log(req.body.searchEngineQuotes);
+    let promiseSearchEngine = serviceLogic.getSearchEngineLabels(req.body.searchEngineQuotes);
+    promiseSearchEngine.then(searchEngineLabels => {
+      var searchEngineLabelsParsed = JSON.parse(JSON.stringify(searchEngineLabels));
+      serviceLogic.setFinalImageLabeled(searchEngineLabelsParsed);
+      imgTransformed = serviceLogic.transformImageLabeled();
+      serviceLogic.setUser(idUser);
+      serviceLogic.saveImage("", function(idImageSaved) {
+        console.log("Task 2: Getting Image from GoogleVision  --- Successful");
+        res.status(200).json({
+          "idImage": idImageSaved,
+          "image": imgTransformed
+        });
+      });
+    }).catch(err => console.log(err.message));
+  } else {
     let response = templates.messages.uri.image.incorrectRequestBody;
     res.status(response.status).send(response.text);
   }
