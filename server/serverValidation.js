@@ -8,12 +8,11 @@ var labels;
 function validateImageBase64(imageBase64) {
   let isEncodedBase64 = false;
   try {
-    window.atob(imageBase64);
+    var decoded = new Buffer(imageBase64, 'base64').toString('ascii');
     isEncodedBase64 = true;
   } catch (err) {
     isEncodedBase64 = false;
   } finally {
-    console.log(isEncodedBase64);
     return isEncodedBase64;
   }
 }
@@ -70,16 +69,6 @@ function allLabelsHaveValue(keys) {
     }
   }
   return true;
-/*  keys.forEach(el => {
-    Object.keys(el).forEach(property => {
-      console.log(el[property]);
-      if (el[property] == '') {
-        return false;
-      }
-    });
-    return true;
-  });
-*/
 }
 
 function isStringEmpty(value) {
