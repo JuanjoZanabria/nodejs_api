@@ -70,7 +70,7 @@ function transformImageLabeled() {
 
 function getSearchEngineLabels(seQuotes) {
   let quotes = "";
-  if (typeof imageAnnotatedTemplate === null) {
+  if (SEquotes == "") {
     let quoteWebEntity = getWebEntities();
     let quoteLogo = getLogo();
     quotes = setQuotesToSearch(quoteLogo, quoteWebEntity);
