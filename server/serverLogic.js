@@ -68,14 +68,14 @@ function transformImageLabeled() {
   return imgTransformed;
 }
 
-function getSearchEngineLabels(SEquotes) {
+function getSearchEngineLabels(seQuotes) {
   let quotes = "";
   if (typeof imageAnnotatedTemplate === null) {
     let quoteWebEntity = getWebEntities();
     let quoteLogo = getLogo();
     quotes = setQuotesToSearch(quoteLogo, quoteWebEntity);
   } else {
-    quotes = SEquotes;
+    quotes = seQuotes;
   }
   let promise = searchEngineClient.callSearchEngine(quotes);
   return promise;

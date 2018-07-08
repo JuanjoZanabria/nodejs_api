@@ -54,8 +54,24 @@ function validateName() {
 }
 
 function allLabelsHaveValue(keys) {
-  keys.forEach(function(el) {
-    Object.keys(el).forEach(function(property) {
+  for(let key in keys){
+    console.log(key + ' - ' + keys[key])
+    if (key === 'name'){
+        let userName = Object.values(key);
+        userName.forEach(function(name){
+          if (name == '') {
+            return false;
+          }
+        });
+    }else{
+      if (keys[key] == '') {
+        return false;
+      }
+    }
+  }
+  return true;
+/*  keys.forEach(el => {
+    Object.keys(el).forEach(property => {
       console.log(el[property]);
       if (el[property] == '') {
         return false;
@@ -63,6 +79,7 @@ function allLabelsHaveValue(keys) {
     });
     return true;
   });
+*/
 }
 
 function isStringEmpty(value) {

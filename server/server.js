@@ -76,11 +76,13 @@ res: resultado, idImagen en BBDD
 server.post("/user/:idUser/image", function(req, res) {
   console.log(templates.messages.uri.image.called);
   let idUser = req.params.idUser;
-  if (req.body.imageBase64 && serviceValidate.validateImageBase64(req.body.imageBase64)) {
+  if (req.body.imageBase64) {     //  && serviceValidate.validateImageBase64(req.body.imageBase64)
+    console.log('Imagen en base64');
     let imageBase64 = req.body.imageBase64;
     let formattedRequest = googleClient.setRequest(imageBase64);
     serviceValidate.userExists(idUser, function(exists) {
       if (exists) {
+        console.log('El usuario existe');
         let promiseImageAnnotated = googleClient.getImageAnnotated(formattedRequest);
         promiseImageAnnotated.then(imageAnnotated => {
             serviceLogic.setImageAnnotated(imageAnnotated);
