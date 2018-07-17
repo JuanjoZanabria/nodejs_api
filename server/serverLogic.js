@@ -11,7 +11,7 @@ var imgTransformed = {
   queries: "",
   items: [Object]
 };
-var maxNumberOfDescriptionsWanted = 5;
+var maxNumberOfDescriptionsWanted = 3;
 var userTemplate = {
   name: {
     firstName: "",
@@ -191,12 +191,15 @@ function getImagesWithPopularDescriptions(images) {
     keywordsSortedAndUnique.splice(1, keywordsSortedAndUnique.length - 1);
   });
   var popularImages = {};
+  var popular = 'popular';
+  popularImages[popular] = [];
   for (var image in images) {
     let clave = image.split("/");
     keywordsSortedAndUnique.forEach(function(keyword) {
       if (clave[1] == keyword) {
         let ruta = clave[0] + "/" + keyword;
-        popularImages[ruta] = images[ruta];
+        popularImages[popular].push(images[ruta]);
+        //popularImages[ruta] = images[ruta];
       }
     })
   }
@@ -220,6 +223,9 @@ function sortByFrequency(array) {
 }
 
 function setQuotesToSearch(quoteLogo, quoteWebEntity) {
+  console.log("Logo "+quoteLogo)
+  console.log("Web Entity "+quoteWebEntity)
+
   return quoteLogo + quoteWebEntity;
 }
 

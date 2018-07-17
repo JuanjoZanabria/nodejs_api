@@ -7,7 +7,7 @@ function callSearchEngine(quotes) {
   return new Promise(function(resolve) {
     https.get('https://www.googleapis.com/customsearch/v1' + apiKey + customSearchEngine + "&q=" + quotes,
      function(response) {
-      response.setEncoding('utf8');
+      response.setEncoding('UTF-8');
       var data = '';
       response.on('data', function(chunk) {
         data += chunk;

@@ -42,11 +42,11 @@ server.listen(3003, function() {
 })
 
 server.use(bodyParser.urlencoded({
-  limit: '50mb',
+  limit: '500mb',
   extended: false
 }));
 server.use(bodyParser.json({
-  limit: '50mb'
+  limit: '500mb'
 }));
 
 /*
@@ -57,6 +57,7 @@ res: id del usuario
 */
 server.post("/auth", function(req, res) {
   console.log(templates.messages.uri.auth.called);
+  console.log(req.body)
   if (serviceValidate.validateUser(req.body)) {
     serviceLogic.requestUser(req.body, function(userId) {
       res.send(userId);
@@ -76,7 +77,9 @@ res: resultado, idImagen en BBDD
 server.post("/user/:idUser/image", function(req, res) {
   console.log(templates.messages.uri.image.called);
   let idUser = req.params.idUser;
+
   if (req.body.imageBase64 && serviceValidate.validateImageBase64(req.body.imageBase64)) {
+    console.log("Task 2: Getting Image from GoogleVision  --- Successful");
     let imageBase64 = req.body.imageBase64;
     let formattedRequest = googleClient.setRequest(imageBase64);
     serviceValidate.userExists(idUser, function(exists) {
@@ -108,6 +111,7 @@ server.post("/user/:idUser/image", function(req, res) {
     });
   } else if (req.body.searchEngineQuotes) {
     let promiseSearchEngine = serviceLogic.getSearchEngineLabels(req.body.searchEngineQuotes);
+    console.log("Task 2: Getting Image from GoogleVision  --- Successful");
     promiseSearchEngine.then(searchEngineLabels => {
       var searchEngineLabelsParsed = JSON.parse(JSON.stringify(searchEngineLabels));
       serviceLogic.setFinalImageLabeled(searchEngineLabelsParsed);
